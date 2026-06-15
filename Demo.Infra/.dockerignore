@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Build output
+bin/
+obj/
+out/
+
+# VS / IDE
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files not needed in image
+docker-compose*
+Dockerfile*
+
+# Tests
+TestResults/
+coverage/
+
+# Node (if present)
+node_modules/
+
+# Environment files
+.env
+
+# Docs
+README.md
+*.md
+
+# Temporary files
+*.tmp
+*.swp
+
+# NuGet packages cache
+packages/

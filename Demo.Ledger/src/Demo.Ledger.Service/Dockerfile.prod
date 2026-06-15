@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY nuget.config .
+COPY packages/ packages/
+COPY Demo.Ledger/ Demo.Ledger/
+
+RUN dotnet restore Demo.Ledger/src/Demo.Ledger.Service/Demo.Ledger.Service.csproj
+
+WORKDIR /src/Demo.Ledger/src/Demo.Ledger.Service
+RUN dotnet publish Demo.Ledger.Service.csproj -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+EXPOSE 8080
+
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Demo.Ledger.Service.dll"]

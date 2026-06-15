@@ -1,0 +1,56 @@
+# Build results
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# NuGet
+*.nupkg
+packages/*
+!packages/build/
+!packages/repositories.config
+
+# Generated files
+Generated_Code/
+
+# Coverage / test
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Publish output
+publish/
+
+# Environment files
+.env
+
+# ASP.NET
+appsettings.*.json
+!appsettings.json
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+*.swp
+*.tmp

@@ -1,0 +1,89 @@
+services:
+
+  ledger:
+    build:
+      context: ..
+      dockerfile: Demo.Ledger/src/Demo.Ledger.Service/Dockerfile
+    ports:
+      - "5001:8080"
+    volumes:
+      - ../Demo.Ledger/src:/src/Demo.Ledger/src
+    environment:
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_WATCH_SUPPRESS_BROWSER_LAUNCH=1
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTP_URLS=8080
+    working_dir: /src/Demo.Ledger/src/Demo.Ledger.Service
+    command: dotnet watch run --verbose --non-interactive --no-launch-profile
+    container_name: ledger-service
+  
+  payment:
+    build:
+      context: ..
+      dockerfile: Demo.Payment/src/Demo.Payment.Service/Dockerfile
+    ports:
+      - "5002:8080"
+    volumes:
+      - ../Demo.Payment/src:/src/Demo.Payment/src
+    environment:
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_WATCH_SUPPRESS_BROWSER_LAUNCH=1
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTP_PORTS=8080
+    working_dir: /src/Demo.Payment/src/Demo.Payment.Service
+    command: dotnet watch run --verbose --non-interactive --no-launch-profile
+    container_name: payment-service
+  
+  settlement:
+    build:
+      context: ..
+      dockerfile: Demo.Settlement/src/Demo.Settlement/Dockerfile
+    volumes:
+      - ../Demo.Settlement/src:/src/Demo.Settlement/src
+    environment:
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_WATCH_SUPPRESS_BROWSER_LAUNCH=1
+      - DOTNET_ENVIRONMENT=Docker
+    working_dir: /src/Demo.Settlement/src/Demo.Settlement
+    command: dotnet watch run --verbose --non-interactive --no-launch-profile
+    container_name: settlement-worker
+
+  postgres:
+    image: postgres
+    container_name: demo_postgres_instance
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password1234
+      POSTGRES_DB: ledgerdb
+    volumes:
+      - ./sql/initdb.sql:/docker-entrypoint-initdb.d/init.sql
+
+  mongo:
+    image: mongo
+    container_name: demo_mongo_instance
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongodbdata:/data/db
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: demo_rabbitmq_instance
+    ports:
+      - "5677:5672"
+      - "15677:15672"
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    hostname: rabbit
+
+  redis:
+    image: redis:7-alpine
+    container_name: demo_reddis_instance
+    ports:
+      - 6390:6379
+    
+volumes:
+  mongodbdata:
+  rabbitmqdata:
