@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fintech-ingress
+  # namespace: fintech
+
+spec:
+  rules:
+    - host: payments.local
+      http:
+        paths:
+          - path: /
+            pathType: prefix
+            backend:
+              service:
+                name: payments-api
+                port:
+                  number: 5678

@@ -1,0 +1,21 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: settlement
+spec:
+  selector:
+    matchLabels:
+      app: settlement
+  template:
+    metadata:
+      labels:
+        app: settlement
+    spec:
+      containers:
+      - name: settlement
+        image: demoinfra-settlement:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Never
+

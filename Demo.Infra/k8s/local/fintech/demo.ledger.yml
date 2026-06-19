@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger
+spec:
+  selector:
+    matchLabels:
+      app: ledger
+  template:
+    metadata:
+      labels:
+        app: ledger
+    spec:
+      containers:
+      - name: ledger
+        image: demoinfra-ledger:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Never
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ledger
+  ports:
+  - port: 80
+    targetPort: 8080
+
