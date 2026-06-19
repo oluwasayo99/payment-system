@@ -19,12 +19,12 @@ public class PaymentSettledConsumer : IConsumer<PaymentSettled>
         
         try
         {
-            await ledgerService.SettleAsync(message.ReservtionId);
-            Console.WriteLine($"Ledger settled reservation {message.ReservtionId}");
+            await ledgerService.SettleAsync(message.ReservationId);
+            Console.WriteLine($"Ledger settled reservation {message.ReservationId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CRITICAL] Ledger failed to settle reservation {message.ReservtionId}: {ex.Message}");
+            Console.WriteLine($"[CRITICAL] Ledger failed to settle reservation {message.ReservationId}: {ex.Message}");
             throw;
         }
     }

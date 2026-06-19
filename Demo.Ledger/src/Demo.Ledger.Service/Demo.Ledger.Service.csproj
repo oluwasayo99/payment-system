@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.79" />
-    <ProjectReference Include="..\..\..\Demo.Common\src\Demo.Common\Demo.Common.csproj" />
+    <PackageReference Include="Demo.Common" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
