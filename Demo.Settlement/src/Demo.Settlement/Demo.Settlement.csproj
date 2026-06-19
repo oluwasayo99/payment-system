@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Demo.Common" Version="1.1.1" />
+    <PackageReference Include="Demo.Common" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
   </ItemGroup>
 </Project>

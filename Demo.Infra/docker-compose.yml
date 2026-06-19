@@ -57,8 +57,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password1234
       POSTGRES_DB: ledgerdb
-    volumes:
-      - ./sql/initdb.sql:/docker-entrypoint-initdb.d/init.sql
 
   mongo:
     image: mongo

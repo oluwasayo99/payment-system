@@ -19,12 +19,15 @@ public class PaymentFailedConsumer : IConsumer<PaymentFailed>
         
         try
         {
-            await ledgerService.ReleaseAsync(message.ReservtionId);
-            Console.WriteLine($"Ledger released reservation {message.ReservtionId} due to payment failure.");
+            if (message.ReservationId.HasValue)
+            {
+                await ledgerService.ReleaseAsync(message.ReservationId.Value);
+                Console.WriteLine($"Ledger released reservation {message.ReservationId.Value} due to payment failure.");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CRITICAL] Ledger failed to release reservation {message.ReservtionId}: {ex.Message}");
+            Console.WriteLine($"[CRITICAL] Ledger failed to release reservation {message.ReservationId}: {ex.Message}");
             throw;
         }
     }
