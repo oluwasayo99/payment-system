@@ -26,6 +26,7 @@ Thumbs.db
 # NuGet
 *.nupkg
 packages/*
+!packages/*.nupkg
 !packages/build/
 !packages/repositories.config
 
