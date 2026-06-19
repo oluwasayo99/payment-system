@@ -9,16 +9,13 @@ public class PaymentAuthorizedConsumer : IConsumer<PaymentAuthorized>
 {
     private readonly BankService bankService;
     private readonly IPublishEndpoint publishEndpoint;
-    private readonly LedgerClient ledgerClient;
 
     public PaymentAuthorizedConsumer(
         BankService bankService,
-        LedgerClient ledgerClient,
         IPublishEndpoint publishEndpoint
     )
     {
         this.bankService = bankService;
-        this.ledgerClient = ledgerClient;
         this.publishEndpoint = publishEndpoint;
     }
     public async Task Consume(ConsumeContext<PaymentAuthorized> context)
@@ -35,8 +32,7 @@ public class PaymentAuthorizedConsumer : IConsumer<PaymentAuthorized>
 
             if (!processed)
             {
-                Console.WriteLine("Payment not processed. Will release funds");
-                await ledgerClient.ReleaseAsync(message.ReservtionId);
+                Console.WriteLine("Payment not processed.");
                 await publishEndpoint.Publish(
                     new PaymentFailed(
                         message.PaymentId,
@@ -49,8 +45,7 @@ public class PaymentAuthorizedConsumer : IConsumer<PaymentAuthorized>
                 return;
             }
 
-            Console.WriteLine("Payment processed. Will settle");
-            await ledgerClient.SettleAsync(message.ReservtionId);
+            Console.WriteLine("Payment processed. Publishing Settlement event");
             await publishEndpoint.Publish(
                 new PaymentSettled(
                     message.PaymentId,
@@ -61,16 +56,7 @@ public class PaymentAuthorizedConsumer : IConsumer<PaymentAuthorized>
         
         catch (Exception ex)
         {
-            try
-            {
-                await ledgerClient.ReleaseAsync(message.ReservtionId);
-                return;
-            }
-            catch (Exception releaseEx)
-            {
-
-                Console.WriteLine($"[CRITICAL]: Failed to release funds {releaseEx}");
-            }
+            Console.WriteLine($"[CRITICAL]: Bank processing threw exception: {ex}");
 
             await publishEndpoint.Publish(
                 new PaymentFailed(

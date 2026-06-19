@@ -16,57 +16,19 @@ public class LedgerService
     public async Task<object> ReserveAsync(Guid userId, decimal amount)
     {
         await using var conn = await dbConnectionFactory.CreateConnectionAsync();
-        await using var tx = await conn.BeginTransactionAsync();
 
         try
         {
-            var wallet = await conn.QuerySingleOrDefaultAsync<dynamic>(
-                @"
-                SELECT balance, held_balance
-                FROM wallets
-                WHERE user_id = @userId
-                FOR UPDATE",
-                new { userId },
-                tx
-            );
-
-            if (wallet == null)
-            {
-                throw new Exception("Wallet not found");
-            }
-
-            decimal available = wallet.balance - wallet.held_balance;
-            if (available < amount)
-            {
-                throw new Exception("Insufficient funds available");
-            }
-
-            await conn.ExecuteAsync(
-                @"
-                UPDATE wallets
-                SET
-                    held_balance = held_balance + @amount
-                WHERE user_id = @userId",
-                new { userId, amount },
-                tx
-            );
             var reservationId = await conn.ExecuteScalarAsync<Guid>(
-                @"
-                INSERT INTO reservations (user_id, amount, status)
-                VALUES (@userId, @amount, 'PENDING')
-                RETURNING id",
-                new { userId, amount },
-                tx
+                "CALL process_reservation(@userId, @amount, null)", 
+                new { userId, amount }
             );
-
-            await tx.CommitAsync();
 
             return new { status = "RESERVED", reservationId };
         }
         catch(Exception ex)
         {
             Console.WriteLine(ex);
-            await tx.RollbackAsync();
             throw;
         }
     }
@@ -74,36 +36,15 @@ public class LedgerService
     public async Task<object> ReleaseAsync(Guid reservationId)
     {
         await using var conn = await dbConnectionFactory.CreateConnectionAsync();
-        await using var tx = await conn.BeginTransactionAsync();
 
         try
         {
-            var reservation = await conn.QuerySingleOrDefaultAsync<dynamic>(
-                @"SELECT status FROM reservations
-                WHERE id = @id FOR UPDATE",
-                new { id = reservationId },
-                tx
-            );
-
-            if (reservation == null) throw new Exception("Reservation not found");
-            if (reservation.status != "PENDING") throw new Exception($"Cannot release. Status is {reservation.status}");
-
-            await conn.ExecuteAsync(
-                @"UPDATE reservations SET status = 'REVERSED' WHERE id = @id",
-                new { id = reservationId },
-                tx
-            );
-
-            await tx.CommitAsync();
-
+            await conn.ExecuteAsync("CALL release_reservation(@reservationId)", new { reservationId });
             return new { status = "RELEASED", reservationId };
-
-
         }
-        catch
+        catch(Exception ex)
         {
-
-            await tx.RollbackAsync();
+            Console.WriteLine(ex);
             throw;
         }
     }
@@ -111,46 +52,15 @@ public class LedgerService
     public async Task<object> SettleAsync(Guid reservationId)
     {
         await using var conn = await dbConnectionFactory.CreateConnectionAsync();
-        await using var tx = await conn.BeginTransactionAsync();
 
         try
         {
-            var reservation = await conn.QuerySingleOrDefaultAsync<dynamic>(
-                @"SELECT user_id, amount, status FROM reservations
-                WHERE id = @id FOR UPDATE",
-                new { id = reservationId },
-                tx
-            );
-
-            if (reservation == null) throw new Exception("Reservation not found");
-            if (reservation.status != "PENDING") throw new Exception($"Cannot settle. Status is {reservation.status}");
-
-            await conn.ExecuteAsync(
-                @"UPDATE wallets
-                SET balance = balance - @amount,
-                    held_balance = held_balance - @amount
-                WHERE user_id = @userId",
-                new { userId = reservation.user_id, amount = reservation.amount },
-                tx
-            );
-
-            await conn.ExecuteAsync(
-                @"UPDATE reservations
-                SET status = 'SETTLED'
-                WHERE id = @id",
-                new { id = reservation.id },
-                tx
-            );
-
-            await tx.CommitAsync();
-
+            await conn.ExecuteAsync("CALL settle_reservation(@reservationId)", new { reservationId });
             return new { status = "SETTLED" };
-
         }
-        catch
+        catch(Exception ex)
         {
-
-            await tx.RollbackAsync();
+            Console.WriteLine(ex);
             throw;
         }
     }
