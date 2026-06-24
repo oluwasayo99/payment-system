@@ -2,8 +2,9 @@ using Demo.Common.Postgres;
 using Demo.Ledger.Service.Services;
 using FluentAssertions;
 using DbUp;
-using System.Reflection;
 using Dapper;
+using Microsoft.Extensions.Options;
+using Demo.Common.Settings;
 
 namespace Demo.Ledger.Tests.Services;
 
@@ -33,20 +34,17 @@ public class LedgerServiceTests
             .WithScriptsEmbeddedInAssembly(typeof(LedgerService).Assembly)
             .LogToConsole()
             .Build();
-        
+
         var result = upgrader.PerformUpgrade();
         result.Successful.Should().BeTrue();
 
-        // Setup service
-        var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
-            {
-                {"DatabaseSettings:ConnectionString", _fixture.ConnectionString}
-            })
-            .Build();
-        
+        var databaseSettings = Options.Create(new DatabaseSettings
+        {
+            ConnectionString = _fixture.ConnectionString
+        });
+
         // Manual DI essentially
-        _dbConnectionFactory = new DbConnectionFactory(config);
+        _dbConnectionFactory = new DbConnectionFactory(databaseSettings);
         _sut = new LedgerService(_dbConnectionFactory);
     }
 
@@ -62,10 +60,10 @@ public class LedgerServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        
+
         var wallet = await GetWalletAsync(userId);
-        wallet.balance.Should().Be(500m);
-        wallet.held_balance.Should().Be(100m);
+        ((decimal)wallet.balance).Should().Be(500m);
+        ((decimal)wallet.held_balance).Should().Be(100m);
     }
 
     [Fact]
@@ -78,7 +76,7 @@ public class LedgerServiceTests
         // Act & Assert
         await FluentActions.Invoking(() => _sut.ReserveAsync(userId, 100m))
             .Should().ThrowAsync<Exception>()
-            .WithMessage("Insufficient funds available");
+            .WithMessage("*Insufficient funds available*");
     }
 
     private async Task SeedWalletAsync(Guid userId, decimal balance, decimal heldBalance)

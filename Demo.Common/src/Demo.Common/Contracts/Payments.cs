@@ -12,7 +12,7 @@ public record PaymentFailed(
     Guid PaymentId,
     Guid UserId,
     string Reason,
-    Guid? ReservtionId
+    Guid? ReservationId
 );
 
 public record PaymentSettled(
