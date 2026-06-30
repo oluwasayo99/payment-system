@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY nuget.config .
+COPY packages/ packages/
+COPY Demo.Inventory/ Demo.Inventory/
+
+RUN dotnet restore Demo.Inventory/src/Demo.Inventory.Service/Demo.Inventory.Service.csproj
+
+WORKDIR /src/Demo.Inventory/src/Demo.Inventory.Service
+RUN dotnet publish Demo.Inventory.Service.csproj -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+EXPOSE 8080
+
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Demo.Inventory.Service.dll"]

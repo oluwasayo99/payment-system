@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: settlement
+spec:
+  selector:
+    matchLabels:
+      app: settlement
+  template:
+    metadata:
+      labels:
+        app: settlement
+    spec:
+      containers:
+        - name: settlement
+          image: oluwasayo91/fintech-settlement
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: "Kubernetes"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: settlement-service
+spec:
+  type: ClusterIP
+  selector:
+    app: settlement
+  ports:
+    - port: 80
+      targetPort: 8080

@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY nuget.config .
+COPY packages/ packages/
+COPY Demo.Payment/ Demo.Payment/
+
+RUN dotnet restore Demo.Payment/src/Demo.Payment.Service/Demo.Payment.Service.csproj
+
+WORKDIR /src/Demo.Payment/src/Demo.Payment.Service
+RUN dotnet publish Demo.Payment.Service.csproj -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+EXPOSE 8080
+
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Demo.Payment.Service.dll"]

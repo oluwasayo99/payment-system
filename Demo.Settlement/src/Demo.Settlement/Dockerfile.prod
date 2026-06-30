@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY nuget.config .
+COPY packages/ packages/
+COPY Demo.Settlement/ Demo.Settlement/
+
+RUN dotnet restore Demo.Settlement/src/Demo.Settlement/Demo.Settlement.csproj
+
+WORKDIR /src/Demo.Settlement/src/Demo.Settlement
+RUN dotnet publish Demo.Settlement.csproj -c Release -o /app /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/runtime:10.0
+WORKDIR /app
+
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "Demo.Settlement.dll"]

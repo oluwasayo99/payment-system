@@ -6,9 +6,9 @@ A distributed payment processing system built with .NET 10, featuring fund reser
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Payment   │──────▶│   Ledger    │      │  Settlement │
+│   Payment   │──────▶│   Ledger   │     │  Settlement │
 │   Service   │      │   Service   │      │   Worker    │
-│   (Mongo)   │◀─────│  (Postgres) │◀─────│             │
+│   (Mongo)   │◀─────│  (Postgres) │◀────│             │
 └──────┬──────┘      └─────────────┘      └─────────────┘
        │
        ▼

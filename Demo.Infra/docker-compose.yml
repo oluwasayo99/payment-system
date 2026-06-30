@@ -81,7 +81,27 @@ services:
     container_name: demo_reddis_instance
     ports:
       - 6390:6379
-    
+
+  inventory:
+    build:
+      context: ..
+      dockerfile: Demo.Inventory/src/Demo.Inventory.Service/Dockerfile
+    ports:
+      - "5003:8080"
+    volumes:
+      - ../Demo.Inventory/src:/src/Demo.Inventory/src
+    environment:
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_WATCH_SUPPRESS_BROWSER_LAUNCH=1
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTP_PORTS=8080
+    working_dir: /src/Demo.Inventory/src/Demo.Inventory.Service
+    command: dotnet watch run --verbose --non-interactive --no-launch-profile
+    container_name: inventory-service
+    depends_on:
+      - postgres
+      - redis
+     
 volumes:
   mongodbdata:
   rabbitmqdata:
